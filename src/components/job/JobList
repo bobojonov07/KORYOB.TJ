@@ -1,0 +1,72 @@
+'use client';
+
+import { useState, useMemo } from 'react';
+import type { Job } from '@/lib/types';
+import JobCard from './job-card';
+import { Input } from '@/components/ui/input';
+import { Search, MapPin } from 'lucide-react';
+
+type JobListProps = {
+  jobs: Job[];
+};
+
+export default function JobList({ jobs }: JobListProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [location, setLocation] = useState('');
+
+  const filteredJobs = useMemo(() => {
+    return jobs.filter(job => {
+      const matchesSearchTerm = searchTerm.trim() === '' ||
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesLocation = location.trim() === '' ||
+        job.location.toLowerCase().includes(location.toLowerCase());
+
+      return matchesSearchTerm && matchesLocation;
+    });
+  }, [jobs, searchTerm, location]);
+
+  return (
+    <section>
+      <div className="p-6 bg-card rounded-lg shadow-md mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Ҷустуҷӯ аз рӯи унвон, ширкат ё калимаи калидӣ..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Филтр аз рӯи макон..."
+              className="pl-10"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {filteredJobs.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredJobs.map((job) => (
+            <JobCard key={job.id} job={job} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16 bg-card rounded-lg">
+          <h3 className="text-xl font-semibold text-foreground">Ҷойҳои корӣ ёфт нашуданд</h3>
+          <p className="text-muted-foreground mt-2">Кӯшиш кунед, ки филтрҳои ҷустуҷӯии худро танзим кунед.</p>
+        </div>
+      )}
+    </section>
+  );
+}
